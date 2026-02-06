@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShizzyBoost | Продавец FunPay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: #000;
+            cursor: none;
+        }
+
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.9) 0%, 
+                rgba(255, 20, 147, 0.2) 70%);
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: screen;
+            transition: transform 0.15s ease;
+            filter: drop-shadow(0 0 8px #ff1493);
+        }
+
+        .cursor-follower {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 20, 147, 0.4);
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.25s ease-out;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(45deg, #000000 0%, #1a0013 100%);
+        }
+
+        .fullscreen-photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://psv4.userapi.com/s/v1/d2/jB5qoW5MGojJEaaEH7WtR9R51cBOr2CyAR3t5aEHB-07uqP6QO4eHDouuC6K1N6a-cWVNVWNrmgkJ8BIZyP23l1g5R0qmYvgTsPli52JJrMxD7QTdM9bhtQx5kXMI2SxIaww59_R5H2R/2026-02-06_22-19-17.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 1;
+            transform: scale(1.05);
+            filter: brightness(1.1) contrast(1.1) sepia(0.1) hue-rotate(320deg);
+            transition: transform 10s cubic-bezier(0.2, 0.8, 0.2, 1),
+                        filter 6s ease;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 20, 147, 0.05) 0%,
+                rgba(0, 0, 0, 0.8) 30%,
+                rgba(128, 0, 64, 0.1) 70%,
+                rgba(255, 20, 147, 0.05) 100%
+            );
+            z-index: 2;
+            mix-blend-mode: overlay;
+        }
+
+        /* Неоновые линии сетки */
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            opacity: 0.15;
+        }
+
+        .grid-line {
+            position: absolute;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 20, 147, 0.7) 50%, 
+                transparent 100%);
+            animation: grid-pulse 8s infinite ease-in-out;
+        }
+
+        /* Геометрические формы */
+        .geometric-shape {
+            position: absolute;
+            z-index: 4;
+            opacity: 0.7;
+            filter: blur(0.5px);
+            animation: geometric-float 20s infinite ease-in-out;
+        }
+
+        .shape-hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(135deg, 
+                rgba(255, 20, 147, 0.9) 0%,
+                rgba(219, 10, 91, 0.7) 50%,
+                rgba(168, 0, 84, 0.3) 100%);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.5);
+        }
+
+        .shape-diamond {
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.9) 0%,
+                rgba(255, 20, 147, 0.6) 100%);
+            border: 1px solid rgba(255, 20, 147, 0.8);
+            box-shadow: inset 0 0 20px rgba(255, 20, 147, 0.3),
+                        0 0 40px rgba(255, 20, 147, 0.4);
+        }
+
+        .shape-circle {
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.8) 0%,
+                rgba(168, 0, 84, 0.4) 70%,
+                transparent 100%);
+            border: 2px solid rgba(255, 20, 147, 0.6);
+            box-shadow: 0 0 50px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Парящие неоновые частицы */
+        .neon-particle {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 5;
+            filter: blur(1px);
+            animation: neon-float 25s infinite linear;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.9) 0%,
+                rgba(255, 105, 180, 0.5) 30%,
+                transparent 70%);
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.7);
+        }
+
+        /* Розовый дым */
+        .smoke {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.15) 0%,
+                rgba(219, 10, 91, 0.1) 30%,
+                transparent 70%);
+            z-index: 2;
+            animation: smoke-float 40s infinite ease-in-out;
+            filter: blur(25px);
+        }
+
+        /* Электрические разряды */
+        .lightning {
+            position: absolute;
+            width: 2px;
+            height: 0;
+            background: linear-gradient(to bottom, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.9) 30%,
+                rgba(255, 20, 147, 0.9) 70%,
+                transparent 100%);
+            z-index: 6;
+            transform-origin: top center;
+            animation: lightning-strike 15s infinite ease-in-out;
+            filter: drop-shadow(0 0 10px rgba(255, 20, 147, 0.8));
+        }
+
+        /* Розовые блики */
+        .pink-flare {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.25) 0%,
+                rgba(219, 10, 91, 0.15) 30%,
+                transparent 70%);
+            z-index: 2;
+            animation: flare-rotate 30s infinite linear;
+            filter: blur(40px);
+        }
+
+        /* Волны */
+        .pink-wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 150px;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                rgba(255, 20, 147, 0.1) 25%,
+                rgba(219, 10, 91, 0.2) 50%,
+                rgba(255, 20, 147, 0.1) 75%,
+                transparent 100%);
+            z-index: 3;
+            animation: wave-move 20s infinite linear;
+            filter: blur(10px);
+        }
+
+        /* Цифровой дождь (матрица) */
+        .matrix-rain {
+            position: absolute;
+            color: rgba(255, 20, 147, 0.8);
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 20px;
+            z-index: 4;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.9);
+            animation: matrix-fall 15s infinite linear;
+        }
+
+        /* Ключевые кадры анимаций */
+        @keyframes geometric-float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 0.7;
+            }
+            25% {
+                transform: translateY(-40px) translateX(30px) rotate(90deg) scale(1.1);
+                opacity: 0.9;
+            }
+            50% {
+                transform: translateY(20px) translateX(-20px) rotate(180deg) scale(0.9);
+                opacity: 0.5;
+            }
+            75% {
+                transform: translateY(-30px) translateX(40px) rotate(270deg) scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes neon-float {
+            0% {
+                transform: translateY(100vh) translateX(-30px) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.9;
+            }
+            90% {
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(-100px) translateX(30px) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes smoke-float {
+            0%, 100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.2;
+            }
+            25% {
+                transform: translateY(-50px) translateX(100px) scale(1.3);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(30px) translateX(-80px) scale(0.9);
+                opacity: 0.3;
+            }
+            75% {
+                transform: translateY(-40px) translateX(120px) scale(1.2);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes lightning-strike {
+            0%, 95%, 100% {
+                height: 0;
+                opacity: 0;
+            }
+            5%, 90% {
+                height: 0;
+                opacity: 0;
+            }
+            10%, 85% {
+                height: 400px;
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes flare-rotate {
+            0% {
+                transform: rotate(0deg) scale(1);
+                opacity: 0.2;
+            }
+            50% {
+                transform: rotate(180deg) scale(1.5);
+                opacity: 0.4;
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+                opacity: 0.2;
+            }
+        }
+
+        @keyframes wave-move {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes matrix-fall {
+            0% {
+                transform: translateY(-50px) translateX(0) rotateX(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(20px) rotateX(45deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes grid-pulse {
+            0%, 100% {
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        /* Логотип */
+        .logo {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            z-index: 10;
+            mix-blend-mode: screen;
+            animation: logo-glow 4s infinite alternate;
+            text-shadow: 0 0 20px rgba(255, 20, 147, 0.7);
+        }
+
+        .logo span {
+            color: #ff1493;
+            font-weight: 700;
+        }
+
+        @keyframes logo-glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 20, 147, 0.5),
+                             0 0 20px rgba(255, 20, 147, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 20, 147, 0.8),
+                             0 0 40px rgba(255, 20, 147, 0.5),
+                             0 0 60px rgba(255, 20, 147, 0.3);
+            }
+        }
+
+        /* Индикатор фото */
+        .photo-counter {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 2px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px 24px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .counter-number {
+            color: #ff1493;
+            font-weight: 700;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.7);
+        }
+
+        /* Эффект перехода */
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                #000000 0%,
+                #ff1493 50%,
+                #000000 100%);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        /* Вспышка при клике */
+        .click-flash {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, 
+                rgba(255, 20, 147, 0.8) 0%,
+                transparent 70%);
+            z-index: 15;
+            pointer-events: none;
+            filter: blur(20px);
+            transform: translate(-50%, -50%);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 18px;
+                top: 20px;
+                left: 20px;
+                letter-spacing: 2px;
+            }
+            
+            .photo-counter {
+                bottom: 20px;
+                right: 20px;
+                font-size: 12px;
+                padding: 10px 20px;
+            }
+            
+            .cursor, .cursor-follower {
+                display: none;
+            }
+            
+            body {
+                cursor: default;
+            }
+            
+            .matrix-rain {
+                font-size: 16px;
+            }
+        }
+
+        /* Эффект параллакса */
+        .parallax-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Кастомный курсор -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <div class="container">
+        <!-- Логотип -->
+        <div class="logo">Shizzy<span>Boost</span></div>
+        
+        <!-- Фотография -->
+        <div class="fullscreen-photo" id="fullscreenPhoto"></div>
+        
+        <!-- Наложение -->
+        <div class="photo-overlay"></div>
+        
+        <!-- Сетка -->
+        <div class="grid-lines" id="gridLines"></div>
+        
+        <!-- Слой параллакса -->
+        <div class="parallax-layer" id="parallaxLayer"></div>
+        
+        <!-- Индикатор -->
+        <div class="photo-counter">
+            <span>Дата скриншота:</span>
+            <span class="counter-number" id="">06.02.2026</span>
+            <span>ShizzyBoost</span>
+        </div>
+        
+        <!-- Эффект перехода -->
+        <div class="transition-overlay" id="transitionOverlay"></div>
+    </div>
+
+    <script>
+        // Массив фотографий в чёрно-розовой эстетике
+        const noirPhotos = [
+            'https://psv4.userapi.com/s/v1/d2/jB5qoW5MGojJEaaEH7WtR9R51cBOr2CyAR3t5aEHB-07uqP6QO4eHDouuC6K1N6a-cWVNVWNrmgkJ8BIZyP23l1g5R0qmYvgTsPli52JJrMxD7QTdM9bhtQx5kXMI2SxIaww59_R5H2R/2026-02-06_22-19-17.png',
+        ];
+        
+        let currentPhotoIndex = 0;
+        const fullscreenPhoto = document.getElementById('fullscreenPhoto');
+        const cursor = document.querySelector('.cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        const parallaxLayer = document.getElementById('parallaxLayer');
+        const transitionOverlay = document.getElementById('transitionOverlay');
+        const photoNumber = document.getElementById('photoNumber');
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        // Создание сетки
+        function createGrid() {
+            const gridLines = document.getElementById('gridLines');
+            gridLines.innerHTML = '';
+            
+            // Вертикальные линии
+            for (let i = 0; i < 20; i++) {
+                const line = document.createElement('div');
+                line.classList.add('grid-line');
+                line.style.width = '1px';
+                line.style.height = '100%';
+                line.style.left = `${i * 5}%`;
+                line.style.animationDelay = `${i * 0.2}s`;
+                gridLines.appendChild(line);
+            }
+            
+            // Горизонтальные линии
+            for (let i = 0; i < 15; i++) {
+                const line = document.createElement('div');
+                line.classList.add('grid-line');
+                line.style.width = '100%';
+                line.style.height = '1px';
+                line.style.top = `${i * 7}%`;
+                line.style.animationDelay = `${i * 0.3}s`;
+                gridLines.appendChild(line);
+            }
+        }
+        
+        // Создание анимаций
+        function createNoirAnimations() {
+            // Геометрические формы
+            createGeometricShapes();
+            
+            // Неоновые частицы
+            createNeonParticles();
+            
+            // Розовый дым
+            createSmokeEffects();
+            
+            // Электрические разряды
+            createLightning();
+            
+            // Розовые блики
+            createPinkFlares();
+            
+            // Волны
+            createWaves();
+            
+            // Матричный дождь
+            createMatrixRain();
+        }
+        
+        function createGeometricShapes() {
+            const shapes = [
+                {type: 'hexagon', size: 80, x: 15, y: 20},
+                {type: 'diamond', size: 60, x: 85, y: 30},
+                {type: 'circle', size: 100, x: 25, y: 70},
+                {type: 'hexagon', size: 70, x: 75, y: 65},
+                {type: 'diamond', size: 90, x: 40, y: 25},
+                {type: 'circle', size: 50, x: 60, y: 80}
+            ];
+            
+            shapes.forEach((shape, index) => {
+                const element = document.createElement('div');
+                element.classList.add('geometric-shape', `shape-${shape.type}`);
+                
+                element.style.width = `${shape.size}px`;
+                element.style.height = `${shape.size}px`;
+                element.style.left = `${shape.x}%`;
+                element.style.top = `${shape.y}%`;
+                element.style.animationDelay = `${index * 2}s`;
+                element.style.animationDuration = `${15 + index * 3}s`;
+                
+                document.querySelector('.container').appendChild(element);
+            });
+        }
+        
+        function createNeonParticles() {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.classList.add('neon-particle');
+                    
+                    const size = Math.random() * 15 + 5;
+                    const posX = Math.random() * 100;
+                    const duration = Math.random() * 20 + 25;
+                    const delay = Math.random() * 10;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}%`;
+                    particle.style.top = '100%';
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${delay}s`;
+                    
+                    document.querySelector('.container').appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) particle.remove();
+                        createNeonParticles();
+                    }, (duration + delay) * 1000);
+                }, i * 500);
+            }
+        }
+        
+        function createSmokeEffects() {
+            for (let i = 0; i < 4; i++) {
+                const smoke = document.createElement('div');
+                smoke.classList.add('smoke');
+                
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = Math.random() * 30 + 30;
+                const size = Math.random() * 150 + 150;
+                
+                smoke.style.left = `${posX}%`;
+                smoke.style.top = `${posY}%`;
+                smoke.style.width = `${size}px`;
+                smoke.style.height = `${size}px`;
+                smoke.style.animationDuration = `${duration}s`;
+                smoke.style.animationDelay = `${i * 8}s`;
+                
+                document.querySelector('.container').appendChild(smoke);
+            }
+        }
+        
+        function createLightning() {
+            for (let i = 0; i < 5; i++) {
+                const lightning = document.createElement('div');
+                lightning.classList.add('lightning');
+                
+                const posX = Math.random() * 80 + 10;
+                const duration = Math.random() * 10 + 15;
+                const delay = i * 3;
+                
+                lightning.style.left = `${posX}%`;
+                lightning.style.animationDuration = `${duration}s`;
+                lightning.style.animationDelay = `${delay}s`;
+                
+                document.querySelector('.container').appendChild(lightning);
+            }
+        }
+        
+        function createPinkFlares() {
+            for (let i = 0; i < 3; i++) {
+                const flare = document.createElement('div');
+                flare.classList.add('pink-flare');
+                
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = Math.random() * 20 + 25;
+                
+                flare.style.left = `${posX}%`;
+                flare.style.top = `${posY}%`;
+                flare.style.animationDuration = `${duration}s`;
+                flare.style.animationDelay = `${i * 10}s`;
+                
+                document.querySelector('.container').appendChild(flare);
+            }
+        }
+        
+        function createWaves() {
+            for (let i = 0; i < 3; i++) {
+                const wave = document.createElement('div');
+                wave.classList.add('pink-wave');
+                
+                wave.style.bottom = `${i * 30}px`;
+                wave.style.animationDuration = `${15 + i * 5}s`;
+                wave.style.opacity = 0.1 + i * 0.05;
+                
+                document.querySelector('.container').appendChild(wave);
+            }
+        }
+        
+        function createMatrixRain() {
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const rain = document.createElement('div');
+                    rain.classList.add('matrix-rain');
+                    rain.textContent = Math.random() > 0.5 ? 'Shizzy' : 'Boost';
+                    
+                    const posX = Math.random() * 100;
+                    const duration = Math.random() * 10 + 10;
+                    
+                    rain.style.left = `${posX}%`;
+                    rain.style.animationDuration = `${duration}s`;
+                    
+                    document.querySelector('.container').appendChild(rain);
+                    
+                    setTimeout(() => {
+                        if (rain.parentNode) rain.remove();
+                    }, duration * 1000);
+                }
+            }, 300);
+        }
+        
+        // Эффект клика
+        function createClickFlash(x, y) {
+            const flash = document.createElement('div');
+            flash.classList.add('click-flash');
+            
+            flash.style.left = `${x}px`;
+            flash.style.top = `${y}px`;
+            flash.style.width = '0';
+            flash.style.height = '0';
+            
+            document.querySelector('.container').appendChild(flash);
+            
+            // Анимация вспышки
+            const animation = flash.animate([
+                { width: '0', height: '0', opacity: 0.8 },
+                { width: '200px', height: '200px', opacity: 0 }
+            ], {
+                duration: 800,
+                easing: 'ease-out'
+            });
+            
+            animation.onfinish = () => {
+                flash.remove();
+            };
+        }
+        
+        // Премиум смена фото
+        function changePhotoWithNoirEffect() {
+            currentPhotoIndex = (currentPhotoIndex + 1) % noirPhotos.length;
+            
+            // Обновляем номер фото
+            photoNumber.textContent = String(currentPhotoIndex + 1).padStart(2, '0');
+            
+            // Эффект перехода
+            transitionOverlay.animate([
+                { opacity: 0, transform: 'scale(1)' },
+                { opacity: 0.7, transform: 'scale(1.2)' },
+                { opacity: 0, transform: 'scale(1.5)' }
+            ], {
+                duration: 1500,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            });
+            
+            // Эффект смещения
+            fullscreenPhoto.style.transform = 'scale(1.1) translateX(30px)';
+            fullscreenPhoto.style.filter = 'brightness(1.3) contrast(1.2) sepia(0.2) hue-rotate(330deg)';
+            
+            // Смена фото с задержкой
+            setTimeout(() => {
+                fullscreenPhoto.style.backgroundImage = `url('${noirPhotos[currentPhotoIndex]}')`;
+                
+                // Возврат к нормальному состоянию
+                setTimeout(() => {
+                    fullscreenPhoto.style.transform = 'scale(1.05)';
+                    fullscreenPhoto.style.filter = 'brightness(1.1) contrast(1.1) sepia(0.1) hue-rotate(320deg)';
+                }, 800);
+            }, 500);
+        }
+        
+        // Кастомный курсор
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            cursor.style.left = `${mouseX}px`;
+            cursor.style.top = `${mouseY}px`;
+            
+            setTimeout(() => {
+                cursorFollower.style.left = `${mouseX}px`;
+                cursorFollower.style.top = `${mouseY}px`;
+            }, 50);
+            
+            // Эффект параллакса
+            const moveX = (mouseX / window.innerWidth) * 40 - 20;
+            const moveY = (mouseY / window.innerHeight) * 40 - 20;
+            
+            parallaxLayer.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            fullscreenPhoto.style.transform = `scale(1.05) translate(${moveX * 0.2}px, ${moveY * 0.2}px)`;
+        });
+        
+        // Эффекты курсора
+        document.addEventListener('mousedown', () => {
+            cursor.style.transform = 'scale(0.6)';
+            cursorFollower.style.transform = 'scale(1.4)';
+        });
+        
+        document.addEventListener('mouseup', () => {
+            cursor.style.transform = 'scale(1)';
+            cursorFollower.style.transform = 'scale(1)';
+        });
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            createGrid();
+            createNoirAnimations();
+            
+            // Клик для смены фото
+            document.querySelector('.container').addEventListener('click', (e) => {
+                createClickFlash(e.clientX, e.clientY);
+                setTimeout(changePhotoWithNoirEffect, 200);
+            });
+            
+            // Пробел для смены фото
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    createClickFlash(window.innerWidth / 2, window.innerHeight / 2);
+                    changePhotoWithNoirEffect();
+                }
+            });
+            
+            // Автоматическая смена каждые 15 секунд
+            setInterval(changePhotoWithNoirEffect, 15000);
+            
+            // Эффект при загрузке
+            setTimeout(() => {
+                fullscreenPhoto.style.transform = 'scale(1.05)';
+                fullscreenPhoto.style.transition = 'transform 3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            }, 500);
+        });
+        
+        // Адаптация к размеру окна
+        window.addEventListener('resize', () => {
+            fullscreenPhoto.style.transform = 'scale(1.05)';
+        });
+    </script>
+</body>
+</html>
